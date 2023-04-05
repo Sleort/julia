@@ -307,7 +307,6 @@ mutable struct InferenceState
         cached = cache === :global
 
         # some more setups
-        InferenceParams(interp).unoptimize_throw_blocks && mark_throw_blocks!(src, handler_at)
         cache !== :no && push!(get_inference_cache(interp), result)
 
         return new(
@@ -860,28 +859,6 @@ bail_out_apply(::AbstractInterpreter, state::InferenceLoopState, ::InferenceStat
     state.rt === Any
 bail_out_apply(::AbstractInterpreter, state::InferenceLoopState, ::IRInterpretationState) =
     state.rt === Any
-
-function should_infer_this_call(interp::AbstractInterpreter, sv::InferenceState)
-    if InferenceParams(interp).unoptimize_throw_blocks
-        # Disable inference of calls in throw blocks, since we're unlikely to
-        # need their types. There is one exception however: If up until now, the
-        # function has not seen any side effects, we would like to make sure there
-        # aren't any in the throw block either to enable other optimizations.
-        if is_stmt_throw_block(get_curr_ssaflag(sv))
-            should_infer_for_effects(sv) || return false
-        end
-    end
-    return true
-end
-function should_infer_for_effects(sv::InferenceState)
-    effects = sv.ipo_effects
-    effects.consistent === ALWAYS_FALSE && return false
-    effects.effect_free === ALWAYS_FALSE && return false
-    effects.terminates || return false
-    effects.nonoverlayed || return false
-    return true
-end
-should_infer_this_call(::AbstractInterpreter, ::IRInterpretationState) = true
 
 add_remark!(::AbstractInterpreter, ::InferenceState, remark) = return
 add_remark!(::AbstractInterpreter, ::IRInterpretationState, remark) = return
