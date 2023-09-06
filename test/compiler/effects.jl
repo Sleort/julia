@@ -1099,3 +1099,20 @@ end
 @test Base.infer_effects((Base.RefValue{Any},)) do y
     post_opt_refine_effect_free(y, true)
 end |> Core.Compiler.is_effect_free
+
+# Check EA-based refinement of :effect_free
+@noinline noinline_set_ref!(ref::Ref{Int}) = (ref[] = 1; nothing)
+function unused_arg_set_ref(y)
+    ref = Ref{Int}(0)
+    noinline_set_ref!(ref)
+    return nothing
+end
+set_arg_ref!(y) = noinline_set_ref!(y)
+
+# This is inferable by type analysis only since the arguments have no mutable memory
+@test Core.Compiler.is_effect_free(Base.infer_effects(unused_arg_set_ref, Tuple{Nothing}))
+
+# These need EA
+@test Core.Compiler.is_effect_free(Base.infer_effects(unused_arg_set_ref, Tuple{Base.RefValue{Int}}))
+@test Base.infer_effects(set_arg_ref!, Tuple{Base.RefValue{Int}}).effect_free ==
+    Core.Compiler.EFFECT_FREE_IF_INACCESSIBLEMEMONLY

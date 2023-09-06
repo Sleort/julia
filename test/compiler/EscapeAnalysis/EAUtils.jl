@@ -179,8 +179,7 @@ end
 function record_escapes!(interp::EscapeAnalyzer,
     caller::InferenceResult, estate::EscapeState, cacheir::IRCode)
     cache = ArgEscapeCache(estate)
-    ecache = EscapeCacheInfo(cache, estate, cacheir)
-    return caller.argescapes = ecache
+    return caller.analysis_results = EscapeCacheInfo(cache, estate, cacheir)
 end
 
 struct GetEscapeCache
@@ -232,7 +231,7 @@ function run_passes_ipo_safe_with_ea(interp::EscapeAnalyzer,
 end
 
 function CC.cache_result!(interp::EscapeAnalyzer, result::InferenceResult)
-    argescapes = result.argescapes
+    argescapes = result.analysis_results
     if argescapes isa EscapeCacheInfo
         interp.escape_cache.cache[result.linfo] = argescapes
     end

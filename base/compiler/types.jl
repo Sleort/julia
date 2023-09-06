@@ -59,6 +59,8 @@ end
 
 abstract type ForwardableArgtypes end
 
+# TODO make `result.analysis_results` generic
+
 """
     InferenceResult(linfo::MethodInstance, [argtypes::ForwardableArgtypes, 𝕃::AbstractLattice])
 
@@ -75,7 +77,7 @@ mutable struct InferenceResult
     valid_worlds::WorldRange # if inference and optimization is finished
     ipo_effects::Effects     # if inference is finished
     effects::Effects         # if optimization is finished
-    argescapes               # ::ArgEscapeCache if optimized, nothing otherwise
+    analysis_results         # AnalysisResults (e.g. ArgEscapeCache) if optimized, otherwise nothing
     must_be_codeinf::Bool    # if this must come out as CodeInfo or leaving it as IRCode is ok
     function InferenceResult(linfo::MethodInstance, cache_argtypes::Vector{Any}, overridden_by_const::BitVector)
         # def = linfo.def
