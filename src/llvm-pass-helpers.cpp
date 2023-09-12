@@ -126,7 +126,7 @@ namespace jl_intrinsics {
     static Function *addGCAllocAttributes(Function *target)
     {
         auto FnAttrs = AttrBuilder(target->getContext());
-        FnAttrs.addAllocKindAttr(AllocFnKind::Alloc | AllocFnKind::Uninitialized | AllocFnKind::Aligned);
+        FnAttrs.addAllocKindAttr(AllocFnKind::Alloc | AllocFnKind::Uninitialized);
         FnAttrs.addAttribute(Attribute::WillReturn);
         FnAttrs.addAttribute(Attribute::NoUnwind);
         FnAttrs.addAttribute(Attribute::MustProgress);

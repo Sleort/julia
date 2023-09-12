@@ -655,29 +655,53 @@ static AttributeList get_attrs_basic(LLVMContext &C)
 
 static AttributeList get_attrs_box_float(LLVMContext &C, unsigned nbytes)
 {
+        auto FnAttrs = AttrBuilder(C);
+    FnAttrs.addAttribute(Attribute::WillReturn);
+    FnAttrs.addAttribute(Attribute::NoUnwind);
+    FnAttrs.addAttribute(Attribute::MustProgress);
+    FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
+    auto RetAttrs = AttrBuilder(C);
+    RetAttrs.addAttribute(Attribute::NoAlias);
+    RetAttrs.addAttribute(Attribute::NonNull);
+    RetAttrs.addAttribute(Attribute::getWithDereferenceableBytes(C, nbytes));
     return AttributeList::get(C,
-                AttributeSet(),
-                AttributeSet(AttributeSet::get(C, {Attribute::getWithDereferenceableBytes(C, nbytes)})
-                .addAttributes(C, Attributes(C, {Attribute::NonNull,}))),
+                AttributeSet::get(C, FnAttrs),
+                AttributeSet::get(C, RetAttrs),
                 None);
 }
 
 static AttributeList get_attrs_box_sext(LLVMContext &C, unsigned nbytes)
 {
+    auto FnAttrs = AttrBuilder(C);
+    FnAttrs.addAttribute(Attribute::WillReturn);
+    FnAttrs.addAttribute(Attribute::NoUnwind);
+    FnAttrs.addAttribute(Attribute::MustProgress);
+    FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
+    auto RetAttrs = AttrBuilder(C);
+    RetAttrs.addAttribute(Attribute::NoAlias);
+    RetAttrs.addAttribute(Attribute::NonNull);
+    RetAttrs.addAttribute(Attribute::getWithDereferenceableBytes(C, nbytes));
     return AttributeList::get(C,
-                AttributeSet(),
-                AttributeSet(AttributeSet::get(C, {Attribute::getWithDereferenceableBytes(C, nbytes)})
-                .addAttributes(C, Attributes(C, {Attribute::NonNull,}))),
-                {Attributes(C, {Attribute::SExt})});
+                AttributeSet::get(C, FnAttrs),
+                AttributeSet::get(C, RetAttrs),
+                AttributeSet::get(C, {Attribute::SExt}));
 }
 
 static AttributeList get_attrs_box_zext(LLVMContext &C, unsigned nbytes)
 {
+    auto FnAttrs = AttrBuilder(C);
+    FnAttrs.addAttribute(Attribute::WillReturn);
+    FnAttrs.addAttribute(Attribute::NoUnwind);
+    FnAttrs.addAttribute(Attribute::MustProgress);
+    FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
+    auto RetAttrs = AttrBuilder(C);
+    RetAttrs.addAttribute(Attribute::NoAlias);
+    RetAttrs.addAttribute(Attribute::NonNull);
+    RetAttrs.addAttribute(Attribute::getWithDereferenceableBytes(C, nbytes));
     return AttributeList::get(C,
-                AttributeSet(),
-                AttributeSet(AttributeSet::get(C, {Attribute::getWithDereferenceableBytes(C, nbytes)})
-                .addAttributes(C, Attributes(C, {Attribute::NonNull,}))),
-                {Attributes(C, {Attribute::ZExt})});
+                AttributeSet::get(C, FnAttrs),
+                AttributeSet::get(C, RetAttrs),
+                AttributeSet::get(C, {Attribute::ZExt}));
 }
 
 
@@ -996,7 +1020,7 @@ static const auto jl_alloc_obj_func = new JuliaFunction<TypeFnContextAndSizeT>{
         auto FnAttrs = AttrBuilder(C);
         FnAttrs.addAllocSizeAttr(1, None); // returns %1 bytes
 #if JL_LLVM_VERSION >= 150000
-        FnAttrs.addAllocKindAttr(AllocFnKind::Alloc | AllocFnKind::Uninitialized | AllocFnKind::Aligned);
+        FnAttrs.addAllocKindAttr(AllocFnKind::Alloc | AllocFnKind::Uninitialized);
 #endif
         FnAttrs.addAttribute(Attribute::WillReturn);
         FnAttrs.addAttribute(Attribute::NoUnwind);
