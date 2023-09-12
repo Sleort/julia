@@ -684,7 +684,7 @@ static AttributeList get_attrs_box_sext(LLVMContext &C, unsigned nbytes)
     return AttributeList::get(C,
                 AttributeSet::get(C, FnAttrs),
                 AttributeSet::get(C, RetAttrs),
-                AttributeSet::get(C, {Attribute::SExt}));
+                AttributeSet::get(C, {Attribute::get(C, Attribute::SExt)}));
 }
 
 static AttributeList get_attrs_box_zext(LLVMContext &C, unsigned nbytes)
@@ -701,7 +701,7 @@ static AttributeList get_attrs_box_zext(LLVMContext &C, unsigned nbytes)
     return AttributeList::get(C,
                 AttributeSet::get(C, FnAttrs),
                 AttributeSet::get(C, RetAttrs),
-                AttributeSet::get(C, {Attribute::ZExt}));
+                AttributeSet::get(C, {Attribute::get(C, Attribute::ZExt)}));
 }
 
 
