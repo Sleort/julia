@@ -72,9 +72,14 @@ function f7(a)
     return a[2]
 end
 
-# COM: check write barrier names
 mutable struct Barrier
     b
+end
+
+# COM: check write barrier names
+function f8(b,y)
+    b.b = y
+    return b
 end
 
 # CHECK-LABEL: define {{(swiftcc )?}}double @julia_f1
@@ -177,12 +182,12 @@ emit(f6, E)
 # CHECK: define {{(swiftcc )?}}i64 @julia_f7
 # CHECK-SAME: %"a::Tuple"
 # CHECK: %"a::Tuple[2]_ptr.unbox
-emit(f7,Tuple{Int,Int})
+emit(f7, Tuple{Int,Int})
 
-# CHECK: define {{(swiftcc )?}}nonnull {} addrspace(10)* @julia_Barrier
-# CHECK-SAME: %"b::Int64"
+# CHECK: define {{(swiftcc )?}}nonnull {} addrspace(10)* @julia_f8
+# CHECK-SAME: %"y::Int64"
 # CHECK: %parent_bits
 # CHECK: %parent_old_marked
 # CHECK: %child_bit
 # CHECK: %child_not_marked
-emit(Barrier, Int64)
+emit(f8, Barrier, Int)
