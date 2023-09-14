@@ -5198,3 +5198,10 @@ end |> only == Val{false}
 @test Base.return_types((Bool,)) do b
     Val(Core.Intrinsics.or_int(true, b))
 end |> only == Val{true}
+
+# issue 51228
+global whatever_unknown_value51228
+f51228() = f51228(whatever_unknown_value51228)
+f51228(x) = 1
+f51228(::Vararg{T,T}) where {T} = "2"
+@test only(Base.return_types(f51228, ())) == Int
