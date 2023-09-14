@@ -201,13 +201,13 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
             newI = builder.CreateCall(
                 bigAllocFunc,
                 { ptls, ConstantInt::get(T_size, sz + sizeof(void*)), type });
-            derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sz + sizeof(void*));
+            derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sz);
         }
         else {
             auto pool_offs = ConstantInt::get(Type::getInt32Ty(F.getContext()), offset);
             auto pool_osize = ConstantInt::get(Type::getInt32Ty(F.getContext()), osize);
             newI = builder.CreateCall(poolAllocFunc, { ptls, pool_offs, pool_osize, type });
-            derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), osize);
+            derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sz);
         }
     } else {
         auto size = builder.CreateZExtOrTrunc(target->getArgOperand(1), T_size);
@@ -216,6 +216,7 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
         derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sizeof(void*));
     }
     newI->setAttributes(newI->getCalledFunction()->getAttributes());
+    newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), target->getRetAlign().valueOrOne()));
     newI->addRetAttr(derefAttr);
     newI->takeName(target);
     target->replaceAllUsesWith(newI);

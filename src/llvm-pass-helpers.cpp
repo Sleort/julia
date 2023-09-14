@@ -129,7 +129,8 @@ namespace jl_intrinsics {
         FnAttrs.addAllocKindAttr(AllocFnKind::Alloc | AllocFnKind::Uninitialized);
         FnAttrs.addAttribute(Attribute::WillReturn);
         FnAttrs.addAttribute(Attribute::NoUnwind);
-        FnAttrs.addAttribute(Attribute::MustProgress);
+        FnAttrs.addAttribute(Attribute::NoFree);
+        FnAttrs.addAttribute(Attribute::NoSync);
         target->addFnAttrs(FnAttrs);
         addRetAttr(target, Attribute::NoAlias);
         addRetAttr(target, Attribute::NonNull);
