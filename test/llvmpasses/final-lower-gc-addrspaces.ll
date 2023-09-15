@@ -18,7 +18,7 @@ declare noalias nonnull {} addrspace(10)** @julia.new_gc_frame(i32)
 declare void @julia.push_gc_frame({} addrspace(10)**, i32)
 declare {} addrspace(10)** @julia.get_gc_frame_slot({} addrspace(10)**, i32)
 declare void @julia.pop_gc_frame({} addrspace(10)**)
-declare noalias nonnull {} addrspace(10)* @julia.gc_alloc_bytes(i8*, i64) #0
+declare noalias nonnull {} addrspace(10)* @julia.gc_alloc_bytes(i8*, i64, {} addrspace(10)*) #0
 
 attributes #0 = { allocsize(1) }
 

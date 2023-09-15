@@ -3914,6 +3914,7 @@ static jl_cgval_t emit_new_struct(jl_codectx_t &ctx, jl_value_t *ty, size_t narg
             }
             else {
                 strct = emit_static_alloca(ctx, lt);
+                
                 setName(ctx.emission_context, strct, "newstruct");
                 if (tracked.count)
                     undef_derived_strct(ctx, strct, sty, ctx.tbaa().tbaa_stack);

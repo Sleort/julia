@@ -2385,7 +2385,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                             CI->getArgOperand(1),
                             allocBytesIntrinsic->getFunctionType()->getParamType(1),
                             false),
-                        builder.CreatePtrToInt(tag, T_size),
+                        CI->getArgOperand(2),
                     });
                 newI->setAttributes(CI->getAttributes());
                 newI->takeName(CI);
