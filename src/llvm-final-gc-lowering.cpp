@@ -191,7 +191,7 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
     IRBuilder<> builder(target);
     auto ptls = target->getArgOperand(0);
     auto type = target->getArgOperand(2);
-    uint64_t derefBytes;
+    uint64_t derefBytes = 0;
     if (auto CI = dyn_cast<ConstantInt>(target->getArgOperand(1))) {
         size_t sz = (size_t)CI->getZExtValue();
         // This is strongly architecture and OS dependent
@@ -220,7 +220,8 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
     newI->setAttributes(newI->getCalledFunction()->getAttributes());
     unsigned align = std::max((int)target->getRetAlign().valueOrOne().value(), 8);
     newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), Align(align)));
-    newI->addDereferenceableRetAttr(derefBytes);
+    if (derefBytes > 0)
+        newI->addDereferenceableRetAttr(derefBytes);
     newI->takeName(target);
     target->replaceAllUsesWith(newI);
     target->eraseFromParent();
