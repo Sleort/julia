@@ -190,7 +190,6 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
     IRBuilder<> builder(target);
     auto ptls = target->getArgOperand(0);
     auto type = target->getArgOperand(2);
-    Attribute derefAttr;
 
     if (auto CI = dyn_cast<ConstantInt>(target->getArgOperand(1))) {
         size_t sz = (size_t)CI->getZExtValue();
@@ -202,24 +201,22 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
                 bigAllocFunc,
                 { ptls, ConstantInt::get(T_size, sz + sizeof(void*)), type });
             if (sz > 0)
-                derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sz);
+                newI->addRetAttr(Attribute::getWithDereferenceableBytes(F.getContext(), sz));
         }
         else {
             auto pool_offs = ConstantInt::get(Type::getInt32Ty(F.getContext()), offset);
             auto pool_osize = ConstantInt::get(Type::getInt32Ty(F.getContext()), osize);
             newI = builder.CreateCall(poolAllocFunc, { ptls, pool_offs, pool_osize, type });
             if (sz > 0)
-                derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sz);
+                newI->addRetAttr(Attribute::getWithDereferenceableBytes(F.getContext(), sz));
         }
     } else {
         auto size = builder.CreateZExtOrTrunc(target->getArgOperand(1), T_size);
         size = builder.CreateAdd(size, ConstantInt::get(T_size, sizeof(void*)));
         newI = builder.CreateCall(allocTypedFunc, { ptls, size, type });
-        derefAttr = Attribute::getWithDereferenceableBytes(F.getContext(), sizeof(void*));
     }
     newI->setAttributes(newI->getCalledFunction()->getAttributes());
     newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), target->getRetAlign().valueOrOne()));
-    newI->addRetAttr(derefAttr);
     newI->takeName(target);
     target->replaceAllUsesWith(newI);
     target->eraseFromParent();
