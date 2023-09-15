@@ -4,6 +4,7 @@
 #include "passes.h"
 
 #include <llvm/ADT/Statistic.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Module.h>
@@ -12,6 +13,7 @@
 #include <llvm/Pass.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Transforms/Utils/ModuleUtils.h>
+#include <stdint.h>
 
 #include "llvm-codegen-shared.h"
 #include "julia.h"
@@ -189,7 +191,7 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
     IRBuilder<> builder(target);
     auto ptls = target->getArgOperand(0);
     auto type = target->getArgOperand(2);
-
+    uint64_t derefBytes;
     if (auto CI = dyn_cast<ConstantInt>(target->getArgOperand(1))) {
         size_t sz = (size_t)CI->getZExtValue();
         // This is strongly architecture and OS dependent
@@ -200,22 +202,25 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
                 bigAllocFunc,
                 { ptls, ConstantInt::get(T_size, sz + sizeof(void*)), type });
             if (sz > 0)
-                newI->addRetAttr(Attribute::getWithDereferenceableBytes(F.getContext(), sz));
+                derefBytes = sz;
         }
         else {
             auto pool_offs = ConstantInt::get(Type::getInt32Ty(F.getContext()), offset);
             auto pool_osize = ConstantInt::get(Type::getInt32Ty(F.getContext()), osize);
             newI = builder.CreateCall(poolAllocFunc, { ptls, pool_offs, pool_osize, type });
             if (sz > 0)
-                newI->addRetAttr(Attribute::getWithDereferenceableBytes(F.getContext(), sz));
+                derefBytes = sz;
         }
     } else {
         auto size = builder.CreateZExtOrTrunc(target->getArgOperand(1), T_size);
         size = builder.CreateAdd(size, ConstantInt::get(T_size, sizeof(void*)));
         newI = builder.CreateCall(allocTypedFunc, { ptls, size, type });
+        derefBytes = sizeof(void*);
     }
     newI->setAttributes(newI->getCalledFunction()->getAttributes());
-    newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), target->getRetAlign().valueOrOne()));
+    unsigned align = std::max((int)target->getRetAlign().valueOrOne().value(), 8);
+    newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), Align(align)));
+    newI->addDereferenceableRetAttr(derefBytes);
     newI->takeName(target);
     target->replaceAllUsesWith(newI);
     target->eraseFromParent();

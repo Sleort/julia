@@ -2387,6 +2387,7 @@ bool LateLowerGCFrame::CleanupIR(Function &F, State *S, bool *CFGModified) {
                             false),
                         builder.CreatePtrToInt(tag, T_size),
                     });
+                newI->setAttributes(CI->getAttributes());
                 newI->takeName(CI);
 
                 // Now, finally, set the tag. We do this in IR instead of in the C alloc
