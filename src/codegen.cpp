@@ -658,8 +658,6 @@ static AttributeList get_attrs_box_float(LLVMContext &C, unsigned nbytes)
     auto FnAttrs = AttrBuilder(C);
     FnAttrs.addAttribute(Attribute::WillReturn);
     FnAttrs.addAttribute(Attribute::NoUnwind);
-    FnAttrs.addAttribute(Attribute::NoFree);
-    FnAttrs.addAttribute(Attribute::NoSync);
     FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
     auto RetAttrs = AttrBuilder(C);
     RetAttrs.addAttribute(Attribute::NoAlias);
@@ -677,8 +675,6 @@ static AttributeList get_attrs_box_sext(LLVMContext &C, unsigned nbytes)
     auto FnAttrs = AttrBuilder(C);
     FnAttrs.addAttribute(Attribute::WillReturn);
     FnAttrs.addAttribute(Attribute::NoUnwind);
-    FnAttrs.addAttribute(Attribute::NoFree);
-    FnAttrs.addAttribute(Attribute::NoSync);
     FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
     auto RetAttrs = AttrBuilder(C);
     RetAttrs.addAttribute(Attribute::NoAlias);
@@ -697,8 +693,6 @@ static AttributeList get_attrs_box_zext(LLVMContext &C, unsigned nbytes)
     auto FnAttrs = AttrBuilder(C);
     FnAttrs.addAttribute(Attribute::WillReturn);
     FnAttrs.addAttribute(Attribute::NoUnwind);
-    FnAttrs.addAttribute(Attribute::NoFree);
-    FnAttrs.addAttribute(Attribute::NoSync);
     FnAttrs.addAttribute(Attribute::InaccessibleMemOnly);
     auto RetAttrs = AttrBuilder(C);
     RetAttrs.addAttribute(Attribute::NoAlias);
@@ -1031,8 +1025,6 @@ static const auto jl_alloc_obj_func = new JuliaFunction<TypeFnContextAndSizeT>{
 #endif
         FnAttrs.addAttribute(Attribute::WillReturn);
         FnAttrs.addAttribute(Attribute::NoUnwind);
-        FnAttrs.addAttribute(Attribute::NoFree);
-        FnAttrs.addAttribute(Attribute::NoSync);
         auto RetAttrs = AttrBuilder(C);
         RetAttrs.addAttribute(Attribute::NoAlias);
         RetAttrs.addAttribute(Attribute::NonNull);
