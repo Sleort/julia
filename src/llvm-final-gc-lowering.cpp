@@ -218,7 +218,7 @@ void FinalLowerGC::lowerGCAllocBytes(CallInst *target, Function &F)
         derefBytes = sizeof(void*);
     }
     newI->setAttributes(newI->getCalledFunction()->getAttributes());
-    unsigned align = std::max((int)target->getRetAlign().valueOrOne().value(), sizeof(void*));
+    unsigned align = std::max((unsigned)target->getRetAlign().valueOrOne().value(), (unsigned)sizeof(void*));
     newI->addRetAttr(Attribute::getWithAlignment(F.getContext(), Align(align)));
     if (derefBytes > 0)
         newI->addDereferenceableRetAttr(derefBytes);
