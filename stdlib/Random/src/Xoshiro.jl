@@ -116,14 +116,18 @@ rng_native_52(::TaskLocalRNG) = UInt64
 ## Shared implementation between Xoshiro and TaskLocalRNG
 
 # this variant of setstate! initializes the internal splitmix state, a.k.a. `s4`
-@inline initstate!(x::Union{TaskLocalRNG, Xoshiro}, (s0, s1, s2, s3)::NTuple{4, UInt64}) =
+@inline function initstate!(x::Union{TaskLocalRNG, Xoshiro}, state)
+    length(state) == 4 && eltype(state) == UInt64 ||
+        throw(ArgumentError("initstate! expects a list of 4 `UInt64` values"))
+    s0, s1, s2, s3 = state
     setstate!(x, (s0, s1, s2, s3, 1s0 + 3s1 + 5s2 + 7s3))
+end
 
 copy(rng::Union{TaskLocalRNG, Xoshiro}) = Xoshiro(getstate(rng)...)
 copy!(dst::Union{TaskLocalRNG, Xoshiro}, src::Union{TaskLocalRNG, Xoshiro}) = setstate!(dst, getstate(src))
 ==(x::Union{TaskLocalRNG, Xoshiro}, y::Union{TaskLocalRNG, Xoshiro}) = getstate(x) == getstate(y)
 
-function seed!(rng::Union{TaskLocalRNG, Xoshiro})
+function seed!(rng::Union{TaskLocalRNG, Xoshiro}, ::Nothing)
     # as we get good randomness from RandomDevice, we can skip hashing
     rd = RandomDevice()
     s0 = rand(rd, UInt64)
@@ -133,14 +137,9 @@ function seed!(rng::Union{TaskLocalRNG, Xoshiro})
     initstate!(rng, (s0, s1, s2, s3))
 end
 
-function seed!(rng::Union{TaskLocalRNG, Xoshiro}, seed::Union{Vector{UInt32}, Vector{UInt64}})
-    c = SHA.SHA2_256_CTX()
-    SHA.update!(c, reinterpret(UInt8, seed))
-    s0, s1, s2, s3 = reinterpret(UInt64, SHA.digest!(c))
-    initstate!(rng, (s0, s1, s2, s3))
-end
+seed!(rng::Union{TaskLocalRNG, Xoshiro}, seed) =
+    initstate!(rng, reinterpret(UInt64, hash_seed(seed)))
 
-seed!(rng::Union{TaskLocalRNG, Xoshiro}, seed::Integer) = seed!(rng, make_seed(seed))
 
 @inline function rand(x::Union{TaskLocalRNG, Xoshiro}, ::SamplerType{UInt64})
     s0, s1, s2, s3 = getstate(x)

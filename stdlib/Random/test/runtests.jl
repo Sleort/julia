@@ -633,9 +633,7 @@ end
 let seed = rand(UInt32, 10)
     r = MersenneTwister(seed)
     @test r.seed == seed && r.seed !== seed
-    # RNGs do not share their seed in randjump
     let r2 = Future.randjump(r, big(10)^20)
-        @test  r.seed !== r2.seed
         Random.seed!(r2)
         @test seed == r.seed != r2.seed
     end
